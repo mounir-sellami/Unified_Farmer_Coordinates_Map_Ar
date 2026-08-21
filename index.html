@@ -38,6 +38,7 @@
     flex-direction:column;
     height:100vh;
     height:100dvh;
+    overflow:hidden;
   }
 
   /* ===== Header ===== */
@@ -249,7 +250,7 @@
   }
 
   /* ===== Map ===== */
-  #mapWrap{ position:relative; flex:1; min-height:0; z-index:0; }
+  #mapWrap{ position:relative; flex:1; min-height:280px; z-index:0; }
   #map{ position:absolute; inset:0; z-index:1; }
 
   /* push the layer control lower & style it */
@@ -319,8 +320,8 @@
     position:fixed; inset:0; z-index:100;
     background-color: rgba(76,107,63,0.90);
     background-image:
-linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,73,0) 100%),
-    url("Images/Logo_Climate.jpg");
+	linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,73,0) 100%),
+    	url("Images/Logo_Climate.jpg");
     background-size: 100% 100%, 100% 100%;
     background-position: center, center;
     background-repeat: no-repeat, no-repeat;
@@ -495,9 +496,15 @@ linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,
   </div>
 
 
-  <header>
-    <img class="brand-logo brand-logo-left" src="Images/Geo.jpg" alt="Logo">
-    <img class="brand-logo brand-logo-right" src="Images/Tun_Flag.jpg" alt="Drapeau Tunisie">
+<header>
+    <img class="brand-logo brand-logo-left"
+         src="Images/Geo.jpg"
+         alt="Geo">
+
+    <img class="brand-logo brand-logo-right"
+         src="Images/Tun_Flag.jpg"
+         alt="Tunisia">
+
     <div class="head-row">
       <div class="title-block">
         <h1>🌾 خريطة إحداثيات الفلاحين الموحّدة</h1>
@@ -671,6 +678,18 @@ linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,
       }
     });
     map.addLayer(cluster);
+
+    // Le conteneur de la carte peut ne pas avoir sa taille finale au moment
+    // de l'initialisation (mise en page flex, polices en cours de chargement,
+    // overlay de démarrage encore affiché...). On force Leaflet à se
+    // redimensionner à plusieurs reprises pour éviter une carte vide/cassée.
+    setTimeout(()=> map.invalidateSize(), 100);
+    setTimeout(()=> map.invalidateSize(), 500);
+    setTimeout(()=> map.invalidateSize(), 1200);
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(()=> map.invalidateSize());
+    }
+    window.addEventListener('resize', ()=> map.invalidateSize());
   }
 
   function makeIcon(color){
@@ -762,6 +781,9 @@ linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,
       }
     });
 
+    // Zoom automatiquement vers les points visibles.
+    // - Une groupe sélectionnée : zoom sur les points de cette groupe.
+    // - "كل المجموعات" : retour à l'étendue de toutes les données filtrées.
     if(zoomToResults){
       if(visibleMarkers.length === 1){
         map.setView(visibleMarkers[0].getLatLng(), 14, { animate:true });
@@ -784,6 +806,10 @@ linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,
   function loadData(data){
     currentData = data;
     const valid = renderMarkers(data);
+    if(map){
+      map.invalidateSize();
+      setTimeout(()=> map.invalidateSize(), 150);
+    }
     fitToMarkers();
     renderCharts(data);
     return valid;
@@ -867,6 +893,8 @@ linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,
       + '<div class="kpi-card olive"><div class="kpi-label">المساحة الإجمالية (هك)</div><div class="kpi-value">'+totalArea+'</div><div class="kpi-sub">متوسط المساحة للنقطة: '+avgArea+'</div></div>'
       + '<div class="kpi-card"><div class="kpi-label">عدد المجموعات/المعتمديات</div><div class="kpi-value">'+labels.length+'</div><div class="kpi-sub">مجموعة مختلفة</div></div>';
 
+    // ملاحظة: المساحة غير متوفرة لبعض النقاط — توضيح أن المساحة الإجمالية ومتوسط المساحة
+    // محسوبان فقط اعتمادًا على النقاط التي تتوفر لها بيانات المساحة
     const areaNoteEl = document.getElementById('areaNote');
     const missingArea = total - areaCount;
     areaNoteEl.textContent = missingArea > 0
