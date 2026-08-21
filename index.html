@@ -762,9 +762,6 @@ linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,
       }
     });
 
-    // Zoom automatiquement vers les points visibles.
-    // - Une groupe sélectionnée : zoom sur les points de cette groupe.
-    // - "كل المجموعات" : retour à l'étendue de toutes les données filtrées.
     if(zoomToResults){
       if(visibleMarkers.length === 1){
         map.setView(visibleMarkers[0].getLatLng(), 14, { animate:true });
@@ -870,8 +867,6 @@ linear-gradient(160deg, rgba(55,80,41,0) 0%, rgba(76,107,63,0) 55%, rgba(90,122,
       + '<div class="kpi-card olive"><div class="kpi-label">المساحة الإجمالية (هك)</div><div class="kpi-value">'+totalArea+'</div><div class="kpi-sub">متوسط المساحة للنقطة: '+avgArea+'</div></div>'
       + '<div class="kpi-card"><div class="kpi-label">عدد المجموعات/المعتمديات</div><div class="kpi-value">'+labels.length+'</div><div class="kpi-sub">مجموعة مختلفة</div></div>';
 
-    // ملاحظة: المساحة غير متوفرة لبعض النقاط — توضيح أن المساحة الإجمالية ومتوسط المساحة
-    // محسوبان فقط اعتمادًا على النقاط التي تتوفر لها بيانات المساحة
     const areaNoteEl = document.getElementById('areaNote');
     const missingArea = total - areaCount;
     areaNoteEl.textContent = missingArea > 0
